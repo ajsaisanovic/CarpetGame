@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cilim</title>
+	<meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="../css/style.css">
+</head>
+<body class="pozadina"  >
+	<div class="meni" >
+		  <a href="">Igra za dva igrača</a> 
+		  <a href="upute.html">Upute</a> 
+		  <a href="projekat.html">O projektu</a>   
+	</div>
+	<h3 id="naslov" >Igrica ćilim</h3>
+
+	<div class="col-lg-5" id="podaci">  
+		<form class="form-horizontal" id="f" >
+		    <div class="form-group" >
+		      <label class="control-label col-sm-2" for="prviIgrac">Igrač 1:</label>
+		      <div class="col-sm-8">
+		        <input type="text" class="form-control" id="prviIgrac" placeholder="Ime" name="prviIgrac" >
+		      </div>
+		    </div>
+		    <div class="form-group">
+		      <label class="control-label col-sm-2" for="drugiIgrac">Igrač 2:</label>
+		      <div class="col-sm-8">
+		        <input type="text" class="form-control" id="drugiIgrac" placeholder="Ime" name="drugiIgrac" >
+		      </div>
+		    </div>
+		    <label class="control-label col-sm-4">Izaberite dimenziju</label>
+		    <button type="button" class="btn btn-primary" onclick="manja()">Manja</button>
+		    <button type="button" class="btn btn-primary" onclick="srednja()">Srednja</button>
+		    <button type="button" class="btn btn-primary" onclick="velika()">Velika</button>
+	  </form>
+	 <p id="prikazi"></p> 
+	 <p id="kraj"></p>
+
+	 <p id="dugme">
+	 	<button id="revans" class="btn btn-info" onclick="ocisti()">Igrajte ponovo!</button>
+	 </p>
+	 
+  </div>
+  
+  
+	
+
+	<canvas id = "nasCanvas" width="550px" height="550px" style=" margin-top: 20px;"></canvas>
+
+</div>
+	<script type="text/javascript">
+		var dim;
+
+		window.onload=function(){
+			$("#dugme").hide();
+			$("#nasCanvas").hide();
+		}
+
+
+		function manja(){
+			dim=7;
+			$("#nasCanvas").show();
+			crtajCilim7();
+			$("#f").hide();
+			
+			forma();
+			bodovi();
+		}
+		function srednja(){
+			dim=9;
+			$("#nasCanvas").show();
+			crtajCilim9();
+			$("#f").hide();
+			forma();
+			bodovi();
+
+		}
+		function velika(){
+			dim=11;
+			$("#nasCanvas").show();
+			crtajCilim11();
+			$("#f").hide();
+			forma();
+			bodovi();
+		}
+
+		function forma(){
+  		  var x=document.getElementById('f');
+		  localStorage.setItem("Igrac1", x.elements[0].value);
+		  localStorage.setItem("Igrac2", x.elements[1].value);
+		}
+		
+
+
+
+		var canvas = document.getElementById("nasCanvas");
+		var ctx = canvas.getContext("2d");
+		var zatvorene_stranice=[];
+		
+		
+		
+		var igrac1=0;
+		var igrac2=0;
+		var brojac_kraj_igre;
+
+
+		
+		elemLeft = canvas.offsetLeft + canvas.clientLeft;
+	    elemTop = canvas.offsetTop + canvas.clientTop;
+	    var igrac=1;
+		canvas.addEventListener('click', function (event) {
+			var x = event.pageX - elemLeft;
+			var y = event.pageY - elemTop;
+			
+			var xk = x % 50;
+			var yk = y % 50;
+			var koordinate;
+			var boja;
+
+			if (xk > yk && xk + yk <50) {
+				if(daLiPostoji(x - x%50,y - y%50,x - x%50+50,y - y%50,dim)===0){
+					ctx.beginPath();
+					ctx.moveTo(x - x%50,y - y%50);
+					ctx.lineTo(x - x%50+50,y - y%50);
+					koordinate=[x - x%50,y - y%50,x - x%50+50,y - y%50]
+					zatvorene_stranice.push(JSON.stringify(koordinate));
+					
+					if(igrac==1){
+						boja = "blue";	
+					}
+					else {
+						boja="red"
+					}
+					ctx.strokeStyle = boja;
+					ctx.stroke();	
+					provjeraGoreDole(x - x%50,y - y%50,x - x%50+50,y - y%50,boja);
+				}			
+			} else if (xk > yk && xk + yk > 50) {
+				if(daLiPostoji(x - x%50+50,y - y%50,x - x%50+50,y - y%50+50,dim)===0){
+					ctx.beginPath();
+					ctx.moveTo(x - x%50+50,y - y%50);
+					ctx.lineTo(x - x%50+50,y - y%50+50);
+					koordinate=[x - x%50+50,y - y%50,x - x%50+50,y - y%50+50]
+					zatvorene_stranice.push(JSON.stringify(koordinate));
+					
+					if(igrac==1)
+						boja = "blue";
+					else 
+						boja = "red";
+					ctx.strokeStyle = boja;
+					ctx.stroke();
+					provjeraLijevo(x - x%50+50,y - y%50,x - x%50+50,y - y%50+50,boja);
+				}							
+			} else if (xk < yk && xk + yk > 50) {
+				if(daLiPostoji(x - x%50,y - y%50+50,x - x%50+50,y - y%50+50,dim)===0){
+				ctx.beginPath();
+				ctx.moveTo(x - x%50,y - y%50+50);
+				ctx.lineTo(x - x%50+50,y - y%50+50);
+				koordinate=[x - x%50,y - y%50+50,x - x%50+50,y - y%50+50]
+				zatvorene_stranice.push(JSON.stringify(koordinate));
+				if(igrac==1)
+					boja = "blue";
+				else 
+					boja = "red";
+				ctx.strokeStyle = boja;
+				ctx.stroke();
+				provjeraGoreDole(x - x%50,y - y%50+50,x - x%50+50,y - y%50+50,boja);
+			}
+			} else {
+				if(daLiPostoji(x - x%50,y - y%50,x - x%50,y - y%50+50,dim)===0){
+					ctx.beginPath();
+					ctx.moveTo(x - x%50,y - y%50);
+					ctx.lineTo(x - x%50,y - y%50+50);
+					koordinate=[x - x%50,y - y%50,x - x%50,y - y%50+50]
+					zatvorene_stranice.push(JSON.stringify(koordinate));
+					if(igrac==1)
+						boja = "blue";
+					else 
+						boja = "red";
+					ctx.strokeStyle = boja;
+					ctx.stroke();
+					provjeraLijevo(x - x%50,y - y%50,x - x%50,y - y%50+50,boja);	
+			}
+
+			}
+			bodovi();
+
+			
+
+			igrac=-igrac;
+			
+		});
+
+
+		function crtajCilim9(){
+			brojac_kraj_igre=37;
+		
+			for (let i = 0; i<9; i++) {
+			for (let j=0; j<9; j++) {
+				if((i+j==4) || (i+j==5 && i!=5 && j!=5) || (i+j==6 && i!=6 && j!=6) || (i+j==7 && i!=6 && i!=7 && j!=6 && j!=7) ||
+               (i+j==8 && i!=7 && j!=7 && i!=8 && j!=8)|| (i+j==9 && i!=7 && i!=8 && j!=7 && j!=8) ||(i+j==10 && i!=8 && j!=8) ||
+               (i+j==11 && i!=8 && j!=8) || (i+j==12)){
+					ctx.beginPath();
+					ctx.rect(i * 50, j * 50, 50, 50);
+					ctx.strokeStyle= "#949599";
+					ctx.stroke();
+
+				}
+			}
+		}
+		okvir(9,450);
+		pocetnaPolja(450);	
+
+		}
+
+		function crtajCilim7(){
+			brojac_kraj_igre=21;
+
+			for(let i=0;i<7;i++){
+	        	for(let j=0;j<7;j++){
+		            if((i+j==3) || (i+j==4 && i!=4 && j!=4) || (i+j==5 && i!=5 && j!=5) || (i+j==6 && i!=6 && i!=5 && j!=6 && j!=5) ||
+		               (i+j==7 && i!=6 && j!=6) ||(i+j==8 && i!=6 && j!=6) || (i+j==9)){
+
+		               	ctx.beginPath();
+						ctx.rect(i * 50, j * 50, 50, 50);
+						ctx.strokeStyle= "#949599";
+						ctx.stroke();
+
+	            	}
+       			 }        
+    		}
+			okvir(7,350);
+			pocetnaPolja(350);
+		}
+
+		function crtajCilim11(){
+			brojac_kraj_igre=57;
+
+			for(let i=0;i<11;i++){
+	        	for(let j=0;j<11;j++){
+		            if((i+j==5) || (i+j==7 && i!=7 && j!=7) || (i+j==6 && i!=6 && j!=6) ||
+		               (i+j==8 && i!=7 && j!=7 && i!=8 && j!=8)|| (i+j==9 && i!=9 && i!=8 && j!=9 && j!=8) ||(i+j==10 && i!=8 && j!=8&& i!=9 && j!=9 && i!=10 && j!=10) || (i+j==11 && i!=9 && i!=10 && j!=9 && j!=10) || (i+j==12&& i!=9 && i!=10 && j!=9 && j!=10) || (i+j==13 && i!=10 && j!=10) || (i+j==14 && i!=10 && j!=10)|| i+j==15){
+
+		               	ctx.beginPath();
+						ctx.rect(i * 50, j * 50, 50, 50);
+						ctx.strokeStyle= "#949599";
+						ctx.stroke();
+
+	            	}
+       			 }        
+    		}
+			okvir(11,550);
+			pocetnaPolja(550);
+		}
+
+		function bodovi(){
+		  var text = "BODOVI <br> <br>";
+		  
+		  text += localStorage.getItem("Igrac1") +": "+igrac1+"</br>";
+		  text += localStorage.getItem("Igrac2")+": " +igrac2+"</br>";
+		    
+		  document.getElementById("prikazi").innerHTML = text;
+
+		}
+
+
+
+
+		function provjeraLijevo(x,y,x1,y1,boja){
+			let promjena=0;
+			let prva_str=[x-50,y,x,y];
+			let druga_str=[x-50,y,x-50,y+50];
+			let treca_str=[x-50,y+50,x,y+50];
+			let brojac=0;
+			let brojac2=0;
+			let cetvrta_str=[x,y,x+50,y];
+			let peta_str=[x+50,y,x+50,y+50];
+			let sesta_str=[x,y+50,x+50,y+50];
+			for(let i=0;i<zatvorene_stranice.length;i++){
+				if(zatvorene_stranice[i]===JSON.stringify(prva_str) || zatvorene_stranice[i]===JSON.stringify(druga_str) || zatvorene_stranice[i]===JSON.stringify(treca_str))
+					brojac++;
+				if(zatvorene_stranice[i]===JSON.stringify(cetvrta_str) || zatvorene_stranice[i]===JSON.stringify(peta_str) || zatvorene_stranice[i]===JSON.stringify(sesta_str))
+					brojac2++;
+
+			}
+			
+			if(brojac===3){
+				promjena++;
+				ctx.fillStyle = boja;
+				if(boja==="blue"){
+					igrac1++;
+				}
+				else{
+					igrac2++;
+				}
+				igrac=-igrac;
+				ctx.fillRect(x-50, y, 50, 50);
+				brojac_kraj_igre--;
+				
+				krajIgre(brojac_kraj_igre);
+					
+					
+			}
+			if(brojac2===3){
+				
+				ctx.fillStyle = boja;
+				if(boja==="blue"){
+					igrac1++;
+				}
+				else{
+					igrac2++;
+				}
+				if(promjena===0){
+					igrac=-igrac;
+				}
+				ctx.fillRect(x, y, 50, 50);
+				brojac_kraj_igre--;
+				
+				krajIgre(brojac_kraj_igre);
+					
+					
+			}
+		}
+
+
+		function provjeraGoreDole(x,y,x1,y1,boja){
+			let promjena=0;
+			let prva_str=[x,y-50,x,y];
+			let druga_str=[x,y-50,x+50,y-50];
+			let treca_str=[x+50,y-50,x+50,y];
+			let brojac=0;
+			let brojac2=0;
+			let cetvrta_str=[x,y,x,y+50];
+			let peta_str=[x,y+50,x+50,y+50];
+			let sesta_str=[x+50,y,x+50,y+50];
+			for(let i=0;i<zatvorene_stranice.length;i++){
+				if(zatvorene_stranice[i]===JSON.stringify(prva_str) || zatvorene_stranice[i]===JSON.stringify(druga_str) || zatvorene_stranice[i]===JSON.stringify(treca_str))
+					brojac++;
+				if(zatvorene_stranice[i]===JSON.stringify(cetvrta_str) || zatvorene_stranice[i]===JSON.stringify(peta_str) || zatvorene_stranice[i]===JSON.stringify(sesta_str))
+					brojac2++;
+
+			}
+			
+			if(brojac===3){
+				promjena++;
+				ctx.fillStyle = boja;
+				if(boja==="blue"){
+					igrac1++;
+				}
+				else{
+					igrac2++;
+				}
+				igrac=-igrac;
+				ctx.fillRect(x, y-50, 50, 50);
+				brojac_kraj_igre--;
+				
+				krajIgre(brojac_kraj_igre);
+					
+					
+			}
+			if(brojac2===3){
+				
+				ctx.fillStyle = boja;
+				ctx.fillRect(x, y, 50, 50);
+				if(boja==="blue"){
+					igrac1++;
+				}
+				else{
+					igrac2++;
+				}
+				if(promjena===0){
+					igrac=-igrac;
+				}
+				brojac_kraj_igre--;
+				
+				krajIgre(brojac_kraj_igre)
+					
+			}
+		}
+
+		function daLiPostoji(x,y,x1,y1,dim){
+			let stranica=[x,y,x1,y1];
+			igrac=-igrac;
+			for(let i=0;i<zatvorene_stranice.length;i++){
+				if(zatvorene_stranice[i]===JSON.stringify(stranica))
+					return 1;
+			}
+			let sirina=dim*50
+			let y2=0;
+			let y3=sirina-50;
+			let x2=(sirina/2)-25;
+			let x3=(sirina/2)+25;
+
+			if(x>=sirina)
+				return 1;
+
+			if(y===0 || y===sirina-50 || y===sirina)
+				return 1;
+
+			while(y2+100!=y3){
+				if(y===y2+50 || y===y3-50){
+					if(x<x2-50 || x>=x3+50){
+						return 1;
+					}
+				}
+				y2+=50;
+				y3-=50;
+				x2-=50;
+				x3+=50;
+			}
+
+			igrac=-igrac;
+			return 0;
+		}
+
+		function krajIgre(brojac){
+			console.log(brojac);
+			var text="";
+			if(brojac==0){
+				var text = "KRAJ IGRE <br> Pobjednik je ";
+		  			  		  	   	  
+				
+				if(igrac1>igrac2)
+					text += localStorage.getItem("Igrac1") ;
+				else
+					text += localStorage.getItem("Igrac2") ;
+				$("#prikazi").hide();
+				$("#dugme").show();
+
+				
+				
+
+		}
+		document.getElementById("kraj").innerHTML = text;
+		}
+
+		function ocisti(){
+			ctx.clearRect(0,0,550,550);
+			zatvorene_stranice=[];
+			igrac2=0;
+			igrac1=0;
+			document.getElementById("kraj").innerHTML = "";
+
+			if(dim===7)
+				crtajCilim7();
+			else if(dim===9)
+				crtajCilim9();
+			else
+				crtajCilim11();
+			$("#prikazi").show();
+			bodovi();
+			$("#dugme").hide();
+		}
+
+		function okvir(dim,sirina){
+			let n=Math.floor(dim/2)+1;
+
+			var j=0;
+			var j1=(sirina/2)-25;
+			var j2=sirina;
+			var j3=(sirina/2)-25;
+
+			for(let i=0;i<n;i++){
+				var stranica=[];
+				ctx.beginPath();
+				ctx.moveTo((sirina/2)+25-i*50,j);
+				ctx.lineTo((sirina/2)-25-i*50,j);
+				ctx.lineTo((sirina/2)-25-i*50,j+50);
+				stranica=[(sirina/2)-25-i*50,j,(sirina/2)+25-i*50,j]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				stranica=[(sirina/2)-25-i*50,j,(sirina/2)-25-i*50,j+50];
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				ctx.strokeStyle="black";
+				ctx.stroke();
+				j+=50;
+
+				//2
+				ctx.beginPath();
+				ctx.moveTo(0+i*50,j1);
+				ctx.lineTo(0+i*50,j1+50);
+				ctx.lineTo(50+i*50,j1+50);
+				stranica=[0+i*50,j1,0+i*50,j1+50]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				stranica=[0+i*50,j1+50,50+i*50,j1+50]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				ctx.strokeStyle="black";
+				ctx.stroke();
+				j1+=50;
+
+				//3
+				ctx.beginPath();
+				ctx.moveTo((sirina/2)-25+i*50,j2);
+				ctx.lineTo((sirina/2)+25+i*50,j2);
+				ctx.lineTo((sirina/2)+25+i*50,j2-50);
+				stranica=[(sirina/2)-25+i*50,j2,(sirina/2)+25+i*50,j2]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				stranica=[(sirina/2)+25+i*50,j2-50,(sirina/2)+25+i*50,j2]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				ctx.strokeStyle="black";
+				ctx.stroke();
+				j2-=50;
+
+
+				//4
+				ctx.beginPath();
+				ctx.moveTo(sirina-i*50,j3);
+				ctx.lineTo(sirina-50-i*50,j3);
+				ctx.lineTo(sirina-50-i*50,j3-50);
+				stranica=[sirina-50-i*50,j3,sirina-i*50,j3]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				stranica=[sirina-50-i*50,j3-50,sirina-50-i*50,j3,]
+				zatvorene_stranice.push(JSON.stringify(stranica));
+				ctx.strokeStyle="black";
+				ctx.stroke();
+				j3-=50;
+			}
+
+		}
+
+		function pocetnaPolja(sirina){
+			ctx.beginPath();
+			ctx.fillStyle = "blue";
+			ctx.fillRect(0, (sirina/2)-25, 50, 50);
+			koordinate=[50,(sirina/2)-25,50,(sirina/2)+25];
+			zatvorene_stranice.push(JSON.stringify(koordinate));
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.fillStyle = "red";
+			ctx.fillRect((sirina/2)-25, 0, 50, 50);
+			koordinate=[(sirina/2)-25,50,(sirina/2)+25,50];
+			zatvorene_stranice.push(JSON.stringify(koordinate));
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.fillStyle = "blue";
+			ctx.fillRect(sirina-50, (sirina/2)-25, 50, 50);
+			koordinate=[sirina-50,(sirina/2)-25,sirina-50,(sirina/2)+25];
+			zatvorene_stranice.push(JSON.stringify(koordinate));
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.fillStyle = "red";
+			ctx.fillRect((sirina/2)-25, sirina-50, 50, 50);
+			koordinate=[(sirina/2)-25,sirina-50,(sirina/2)+25,sirina-50];
+			zatvorene_stranice.push(JSON.stringify(koordinate));
+			ctx.stroke();	
+		}
+
+		
+
+
+	</script>
+	
+	
+
+</body>
+</html>

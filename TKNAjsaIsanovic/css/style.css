@@ -1,0 +1,86 @@
+.meni a {box-sizing: border-box}
+
+.meni {
+  width: 100%;
+  background-color: rgba(26, 32, 41,0.5);
+  overflow: auto;
+}
+
+.meni a {
+  float: left;
+  padding: 12px;
+  color: white;
+  text-decoration: none;
+  font-size: 17px;
+  width: 33.333%; 
+  text-align: center;
+}
+
+.meni a:hover {
+  background-color: #111;
+}
+
+.meni a.active {
+  background-color: #111;
+}
+
+@media screen and (max-width: 500px) {
+  .meni a {
+    float: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+}
+.pozadina{
+  margin: 0;
+  background-color:#ede4e5 ;
+}
+.naslov{
+  margin-bottom: 50px;
+  margin-top: 50px;
+}
+.upute li{
+  font-size: 18px;
+  padding: 10px;
+}
+
+.pravila {
+  font-size: 17px;
+  text-align: justify;
+}
+
+.igrica{
+  border-radius: 10px;
+  margin-left: 30px;
+  margin-top: 20px;
+
+}
+
+#naslov{
+  text-align: center;
+  font-size: 30px;
+}
+
+#naslov_upute{
+  text-align: center;
+}
+
+#prikazi{
+  font-size: 30px; 
+  text-align: center;
+}
+
+#kraj{
+  font-size: 40px; 
+  text-align: center;
+}
+
+#podaci{
+  margin-top: 100px;
+  margin-left: 10%;
+}
+
+#revans{
+  margin-left: 100px;
+}
